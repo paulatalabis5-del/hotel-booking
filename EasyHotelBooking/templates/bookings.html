@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - Easy Hotel{% endblock %}
+
+{% block content %}
+<!-- Notifications Section -->
+{% if notifications %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Notifications</h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% for notification in notifications %}
+            <div class="list-group-item">
+                <h6 class="mb-1">{{ notification.title }}</h6>
+                <p class="mb-1">{{ notification.message }}</p>
+                <small class="text-muted">{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- Bookings Section -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">My Bookings</h5>
+    </div>
+    <div class="card-body">
+        {% if bookings %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Room</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>#{{ booking.id }}</td>
+                        <td>{{ booking.room.name }}</td>
+                        <td>{{ booking.check_in_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ booking.check_out_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if booking.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif booking.status == 'confirmed' %}
+                            <span class="badge bg-success">Confirmed</span>
+                            {% else %}
+                            <span class="badge bg-danger">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td>₱{{ booking.total_price }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info booking-details-btn" data-booking-id="{{ booking.id }}">
+                                Show Details
+                            </button>
+                            {% if booking.status == 'confirmed' and booking.check_out_date <= datetime.now().date() %}
+                                {% if not booking.rating %}
+                                    <a href="{{ url_for('rating', booking_id=booking.id) }}" class="btn btn-sm btn-primary">
+                                        Rate Stay
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                        Rated
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                            {% if booking.status != 'cancelled' and booking.check_in_date > datetime.now().date() %}
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ booking.id }}">
+                                    Cancel Booking
+                                </button>
+                            {% endif %}
+                            {% if booking.status == 'confirmed' %}
+                                <a href="{{ url_for('receipt', booking_id=booking.id) }}" class="btn btn-sm btn-outline-primary mt-1">View Receipt</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="booking-details-{{ booking.id }}" class="details-row" style="display: none;">
+                        <td colspan="7">
+                            <div class="p-3 bg-light" style="border-radius: 2rem;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 style="color: #2c3e50;">Booking Details</h6>
+                                        <p><strong style="color: #2980b9;">Room:</strong> <span style="color: #34495e;">{{ booking.room.name }}</span></p>
+                                        <p><strong style="color: #2980b9;">Check-in:</strong> <span style="color: #34495e;">{{ booking.check_in_date.strftime('%Y-%m-%d') }}</span></p>
+                                        <p><strong style="color: #2980b9;">Check-out:</strong> <span style="color: #34495e;">{{ booking.check_out_date.strftime('%Y-%m-%d') }}</span></p>
+                                        <p><strong style="color: #2980b9;">Guests:</strong> <span style="color: #34495e;">{{ booking.guests }}</span></p>
+                                        <p><strong style="color: #2980b9;">Total Price:</strong> <span style="color: #34495e;">₱{{ booking.total_price }}</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 style="color: #2c3e50;">Amenities</h6>
+                                        {% if booking.booking_amenities.count() > 0 %}
+                                        <ul style="color: #34495e;">
+                                            {% for booking_amenity in booking.booking_amenities %}
+                                            <li style="color: #16a085;">
+                                                {{ booking_amenity.amenity.name }} ({{ booking_amenity.quantity }}) - ₱{{ booking_amenity.amenity.price * booking_amenity.quantity }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% else %}
+                                        <p style="color: #e74c3c;">No amenities selected</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if booking.rating %}
+                                <div class="mt-3 p-3 border-top">
+                                    <h6>Your Rating</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Overall Experience:</strong> {{ booking.rating.overall_rating }}/5</p>
+                                            <p><strong>Room Quality:</strong> {{ booking.rating.room_rating }}/5</p>
+                                            <p><strong>Amenities:</strong> {{ booking.rating.amenities_rating }}/5</p>
+                                            <p><strong>Service:</strong> {{ booking.rating.service_rating }}/5</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if booking.rating.comment %}
+                                            <p><strong>Your Comment:</strong> {{ booking.rating.comment }}</p>
+                                            {% endif %}
+                                            {% if booking.rating.admin_reply %}
+                                            <div class="alert alert-info">
+                                                <p class="mb-0"><strong>Hotel Response:</strong> {{ booking.rating.admin_reply }}</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">You have no bookings yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% for booking in bookings %}
+    {% if booking.status != 'cancelled' and booking.check_in_date > datetime.now().date() %}
+    <!-- Cancel Booking Modal -->
+    <div class="modal fade" id="cancelModal{{ booking.id }}" tabindex="-1" aria-labelledby="cancelModalLabel{{ booking.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel{{ booking.id }}">Cancel Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('cancel_booking', booking_id=booking.id) }}" method="POST">
+                    <div class="modal-body">
+                        <p>Are you sure you want to cancel this booking?</p>
+                        <div class="mb-3">
+                            <label for="reason{{ booking.id }}" class="form-label">Reason for Cancellation</label>
+                            <select class="form-select mb-2 reason-select" id="reasonSelect{{ booking.id }}" data-booking-id="{{ booking.id }}">
+                                <option value="">Select a reason</option>
+                                <option value="change_of_plans">Change of Plans</option>
+                                <option value="found_better_deal">Found Better Deal</option>
+                                <option value="emergency">Emergency</option>
+                                <option value="travel_restrictions">Travel Restrictions</option>
+                                <option value="other">Other (Please specify)</option>
+                            </select>
+                            <textarea class="form-control" id="reason{{ booking.id }}" name="reason" rows="3" required style="display: none;"></textarea>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Please note that cancellations made less than 24 hours before check-in may incur a cancellation fee.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide booking details
+    const detailButtons = document.querySelectorAll('.booking-details-btn');
+    detailButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            const detailsRow = document.getElementById(`booking-details-${bookingId}`);
+            if (detailsRow.style.display === 'none') {
+                detailsRow.style.display = 'table-row';
+                this.textContent = 'Hide Details';
+            } else {
+                detailsRow.style.display = 'none';
+                this.textContent = 'Show Details';
+            }
+        });
+    });
+    // Attach event listeners to all reason selects
+    document.querySelectorAll('.reason-select').forEach(function(select) {
+        select.addEventListener('change', function() {
+            const bookingId = this.getAttribute('data-booking-id');
+            const textarea = document.getElementById(`reason${bookingId}`);
+            const selectedValue = this.value;
+            if (selectedValue === 'other') {
+                textarea.style.display = 'block';
+                textarea.required = true;
+                textarea.value = '';
+            } else {
+                textarea.style.display = 'none';
+                textarea.required = false;
+                textarea.value = this.options[this.selectedIndex].text;
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

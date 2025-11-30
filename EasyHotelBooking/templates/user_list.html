@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>User Management</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if users %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Registered At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.phone_number or '-' }}</td>
+                            <td>
+                                {% if u.created_at %}
+                                    {# Convert UTC to Asia/Manila (UTC+8) #}
+                                    {{ (u.created_at|to_ph_time).strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No users found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

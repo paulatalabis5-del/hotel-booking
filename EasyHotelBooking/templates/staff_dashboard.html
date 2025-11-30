@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Front Desk Dashboard - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Front Desk Dashboard</h2>
+    {% if next_payroll %}
+    <div class="alert alert-info mb-4">
+        <strong>Next Pay Date:</strong> {{ next_payroll.period_end.strftime('%B %d, %Y') }}<br>
+        <strong>Expected Net Pay:</strong> ₱{{ next_payroll.net_pay|round(2) }}
+    </div>
+    {% else %}
+    <div class="alert alert-warning mb-4">
+        No upcoming payroll found. Please contact admin for details.
+    </div>
+    {% endif %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">🧾 Guest Check-In / Check-Out</h5>
+                    <p class="card-text">Handle real-time check-in/check-out process.</p>
+                    <a href="#checkin-section" class="btn btn-primary">Go to Check-In/Out</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">📖 Booking Management</h5>
+                    <p class="card-text">Create, edit, or cancel bookings.</p>
+                    <a href="#booking-section" class="btn btn-primary">Manage Bookings</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">🔍 Search & Filter</h5>
+                    <p class="card-text">Quickly find guests or reservations.</p>
+                    <a href="#search-section" class="btn btn-primary">Search Bookings</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">💬 Guest Communication</h5>
+                    <p class="card-text">Send welcome messages, reminders, or checkout notices.</p>
+                    <a href="#communication-section" class="btn btn-primary">Send Message</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Check-In/Out Section -->
+    <div id="checkin-section" class="mb-5">
+        <h4>🧾 Guest Check-In / Check-Out</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td>{{ booking.user.username }}</td>
+                    <td>{{ booking.room.name }}</td>
+                    <td>{{ booking.check_in_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ booking.check_out_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ booking.status }}</td>
+                    <td>
+                        {% if booking.status == 'pending' %}
+                        <button class="btn btn-success btn-sm">Check In</button>
+                        {% elif booking.status == 'confirmed' %}
+                        <button class="btn btn-warning btn-sm">Check Out</button>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Booking Management Section -->
+    <div id="booking-section" class="mb-5">
+        <h4>📖 Booking Management</h4>
+        <!-- Optionally, list bookings here or link to booking management page -->
+    </div>
+
+    <!-- Search & Filter Section -->
+    <div id="search-section" class="mb-5">
+        <h4>🔍 Search & Filter Bookings</h4>
+        <form class="row g-3 mb-3" method="get" action="#">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search_guest" placeholder="Guest Name or Email">
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search_room" placeholder="Room Name">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-secondary w-100">Search</button>
+            </div>
+        </form>
+        <!-- Optionally, show filtered results here -->
+    </div>
+
+    <!-- Guest Communication Section -->
+    <div id="communication-section" class="mb-5">
+        <h4>💬 Guest Communication</h4>
+        {% if message_sent %}
+        <div class="alert alert-success">Message sent successfully!</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('staff_dashboard') }}">
+            <div class="mb-3">
+                <label for="guest_email" class="form-label">Guest Email</label>
+                <input type="email" class="form-control" id="guest_email" name="guest_email" required>
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">Message</label>
+                <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

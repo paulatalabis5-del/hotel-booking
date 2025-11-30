@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Easy Hotel - Laguna{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="display-4">Welcome to Easy Hotel</h1>
+        <p class="lead">Experience luxury and comfort in the heart of Laguna</p>
+        <a href="#rooms" class="btn btn-primary btn-lg mt-3">Explore Rooms</a>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5" id="about">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2 class="mb-4">About Easy Hotel</h2>
+                <p class="lead">Your home away from home in beautiful Laguna.</p>
+                <p>Easy Hotel offers a perfect blend of luxury, comfort, and convenience. Located in the scenic area of Laguna, our hotel provides easy access to local attractions while ensuring a peaceful and relaxing stay.</p>
+                <p>Our dedicated staff is committed to making your stay as comfortable and enjoyable as possible. From our well-appointed rooms to our excellent amenities, we strive to exceed your expectations.</p>
+                <div class="mt-4">
+                    <h5>Our Features:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i> 24/7 Front Desk</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Free WiFi</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Room Service</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i> Swimming Pool</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Fitness Center</li>
+                                <li><i class="fas fa-check text-success me-2"></i> Restaurant & Bar</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Quick Booking</h3>
+                        <form action="{{ url_for('booking') }}" method="get">
+                            <div class="mb-3">
+                                <label for="quick-check-in" class="form-label">Check-in Date</label>
+                                <input type="date" class="form-control" id="quick-check-in" name="check_in" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quick-check-out" class="form-label">Check-out Date</label>
+                                <input type="date" class="form-control" id="quick-check-out" name="check_out" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quick-guests" class="form-label">Number of Guests</label>
+                                <select class="form-select" id="quick-guests" name="guests" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1 Person</option>
+                                    <option value="2">2 People</option>
+                                    <option value="3">3 People</option>
+                                    <option value="4">4 People</option>
+                                    <option value="5">5+ People</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Check Availability</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Section -->
+<section class="py-5 bg-light" id="rooms">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Rooms</h2>
+        <div class="row">
+            {% for room in rooms %}
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card room-card h-100">
+                    <span class="badge bg-primary">From ₱{{ room.price_per_night }}/night</span>
+                    <img src="{{ url_for('static', filename='images/rooms/' ~ room.image_url.split('/')[-1]) }}" class="card-img-top" alt="{{ room.name }}" onerror="this.onerror=null; this.src='/static/images/rooms/{{ room.image_url.split('/')[-1] }}'; console.log('Fallback to: ' + this.src);">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ room.name }}</h5>
+                        <p class="card-text">{{ room.description }}</p>
+                        <p><i class="fas fa-user-friends me-2"></i>Up to {{ room.capacity }} guests</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="{{ url_for('booking') }}" class="btn btn-outline-primary w-100">Book Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" id="features">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Easy Hotel?</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                        <h4>Prime Location</h4>
+                        <p>Located in the heart of Laguna, close to tourist attractions, shopping centers, and restaurants.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-concierge-bell fa-3x text-primary mb-3"></i>
+                        <h4>Exceptional Service</h4>
+                        <p>Our friendly and professional staff is dedicated to ensuring you have a comfortable stay.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+                        <h4>Fine Dining</h4>
+                        <p>Enjoy delicious meals at our restaurant, featuring both local and international cuisine.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light" id="testimonials">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Guests Say</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <h5 class="card-title mb-0">John Smith</h5>
+                                <small class="text-muted">Business Traveler</small>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">"The room was spacious and clean. The staff was very friendly and helpful. I'll definitely come back on my next trip to Laguna."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <h5 class="card-title mb-0">Maria Garcia</h5>
+                                <small class="text-muted">Family Vacation</small>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">"Perfect for our family vacation. The kids loved the pool, and we appreciated the spacious family suite. Great value for money!"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <h5 class="card-title mb-0">David Chen</h5>
+                                <small class="text-muted">Weekend Getaway</small>
+                            </div>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                        <p class="card-text">"Amazing stay! The bed was incredibly comfortable, and the breakfast buffet had a great selection. Will definitely recommend to friends."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5" id="contact">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Contact Us</h2>
+                <p class="lead">We'd love to hear from you!</p>
+                <p>If you have any questions about our hotel or would like to make special arrangements for your stay, please don't hesitate to contact us.</p>
+                <div class="mt-4">
+                    <h5>Contact Information:</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> 123 Hotel Road, Laguna, Philippines</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> 0993 558 9037</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> hoteleasy244@gmail.com</li>
+                    </ul>
+                </div>
+                <div class="mt-4">
+                    <h5>Follow Us:</h5>
+                    <div class="social-links">
+                        <a href="#" class="me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="me-3"><i class="fab fa-tripadvisor fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Send Us a Message</h3>
+                        <form id="contact-form">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Your Name</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="mb-4">Our Location</h2>
+        <div class="ratio ratio-16x9" style="max-width: 1000px; margin: 0 auto;">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247964.52638938382!2d121.02701867795626!3d14.279289593705549!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd61ef378cebc9%3A0x198cf38e10fb3014!2sLaguna%2C%20Philippines!5e0!3m2!1sen!2sus!4v1650000000000!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set min date for quick booking to today
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById('quick-check-in').min = todayStr;
+    document.getElementById('quick-check-in').value = todayStr;
+    
+    // Set min check-out to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('quick-check-out').min = tomorrowStr;
+    document.getElementById('quick-check-out').value = tomorrowStr;
+    
+    // Update check-out min date when check-in changes
+    document.getElementById('quick-check-in').addEventListener('change', function() {
+        const checkInDate = new Date(this.value);
+        const minCheckOutDate = new Date(checkInDate);
+        minCheckOutDate.setDate(minCheckOutDate.getDate() + 1);
+        const minCheckOutStr = minCheckOutDate.toISOString().split('T')[0];
+        
+        document.getElementById('quick-check-out').min = minCheckOutStr;
+        
+        // If check-out is before new min, update it
+        const currentCheckOut = new Date(document.getElementById('quick-check-out').value);
+        if (currentCheckOut <= checkInDate) {
+            document.getElementById('quick-check-out').value = minCheckOutStr;
+        }
+    });
+    
+    // Handle contact form submission
+    document.getElementById('contact-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Simple form validation
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
+        
+        if (!name || !email || !subject || !message) {
+            alert('Please fill out all fields');
+            return;
+        }
+        
+        // In a real app, you would send this data to the server
+        alert('Thank you for your message! We will get back to you soon.');
+        this.reset();
+    });
+});
+</script>
+{% endblock %}

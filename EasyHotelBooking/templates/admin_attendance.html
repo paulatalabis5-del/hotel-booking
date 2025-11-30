@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Attendance Management - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Attendance Management (Admin)</h2>
+    {% if message %}
+    <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    <h4>All Attendance Logs</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Employee</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Verified By</th><th>ID Image</th><th>Approved</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for log in all_attendance %}
+        <tr>
+            <td>{{ log.user_id }}</td>
+            <td>{{ log.date }}</td>
+            <td>{{ log.clock_in or '-' }}</td>
+            <td>{{ log.clock_out or '-' }}</td>
+            <td>{{ log.verified_by_id or '-' }}</td>
+            <td>{% if log.id_image %}<a href="{{ log.id_image }}" target="_blank">View</a>{% else %}-{% endif %}</td>
+            <td>{% if log.approved %}<span class="text-success">Approved</span>{% else %}<span class="text-warning">Pending</span>{% endif %}</td>
+            <td>
+                {% if not log.approved and log.id_image %}
+                <form method="POST" class="d-inline">
+                    <input type="hidden" name="attendance_id" value="{{ log.id }}">
+                    <button name="action" value="approve_attendance" class="btn btn-success btn-sm">Approve</button>
+                    <button name="action" value="reject_attendance" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h4>Leave Requests</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Employee</th><th>Start</th><th>End</th><th>Reason</th><th>Status</th><th>Admin Comment</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for leave in leave_requests %}
+        <tr>
+            <td>{{ leave.user_id }}</td>
+            <td>{{ leave.start_date }}</td>
+            <td>{{ leave.end_date }}</td>
+            <td>{{ leave.reason }}</td>
+            <td>{{ leave.status }}</td>
+            <td>{{ leave.admin_comment or '-' }}</td>
+            <td>
+                {% if leave.status == 'pending' %}
+                <form method="POST" class="d-inline">
+                    <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                    <input type="text" name="admin_comment" class="form-control mb-1" placeholder="Comment (optional)">
+                    <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                    <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

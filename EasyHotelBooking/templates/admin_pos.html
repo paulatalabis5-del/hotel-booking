@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}POS - Easy Hotel{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Point of Sale (POS)</h2>
+    <div class="mb-4">
+        <h4>Total Monthly Income: <span class="text-success">₱{{ total_monthly_income|round(2) }}</span></h4>
+    </div>
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="selected_day" class="form-label">Select Day</label>
+            <select class="form-control" id="selected_day" name="selected_day" required>
+                <option value="">-- Select Day --</option>
+                {% for day, sales in sales_per_day.items() %}
+                <option value="{{ day }}">{{ day }} (₱{{ sales|round(2) }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="bills" class="form-label">Bills (e.g., utilities, supplies)</label>
+            <input type="number" class="form-control" id="bills" name="bills" step="0.01" min="0" value="{{ bills }}">
+        </div>
+        <div class="col-md-4">
+            <label for="salary_distribution" class="form-label">Salary Distribution (for the day)</label>
+            <input type="number" class="form-control" id="salary_distribution" name="salary_distribution" step="0.01" min="0" value="{{ salary_distribution }}">
+        </div>
+        <div class="col-md-12 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Compute Sales for Day</button>
+        </div>
+    </form>
+    {% if sales_result is not none %}
+    <div class="alert alert-info">
+        <h5>Sales for Selected Day: <span class="text-primary">{{ selected_day }}</span></h5>
+        <p><strong>Sales:</strong> ₱{{ day_sales|round(2) }}</p>
+        <p><strong>Bills:</strong> ₱{{ bills|round(2) }}</p>
+        <p><strong>Salary Distribution:</strong> ₱{{ salary_distribution|round(2) }}</p>
+        <hr>
+        <h4><strong>Net Sales for the Day:</strong> ₱{{ sales_result|round(2) }}</h4>
+    </div>
+    {% endif %}
+    <div class="mt-5">
+        <h4>Sales Per Day (This Month)</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Sales</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day, sales in sales_per_day.items() %}
+                <tr>
+                    <td>{{ day }}</td>
+                    <td>₱{{ sales|round(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

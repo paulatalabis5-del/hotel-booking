@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Your Stay - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Rate Your Stay</h2>
+                    
+                    {% if existing_rating %}
+                        <div class="alert alert-info">
+                            <h5>You have already rated this stay</h5>
+                            <div class="d-flex align-items-center my-3">
+                                <div class="rating-stars me-2">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= existing_rating.stars %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <span>{{ existing_rating.stars }}/5</span>
+                            </div>
+                            
+                            {% if existing_rating.comment %}
+                                <p><strong>Your Comment:</strong> {{ existing_rating.comment }}</p>
+                            {% endif %}
+                            
+                            {% if existing_rating.admin_reply %}
+                                <div class="admin-reply mt-3 p-3 border-start border-3 border-primary">
+                                    <p class="mb-0"><strong>Response from Easy Hotel:</strong> {{ existing_rating.admin_reply }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Back to Dashboard</a>
+                        </div>
+                    {% else %}
+                        <div class="booking-info mb-4">
+                            <h4>Booking Details</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Room:</strong> {{ booking.room.name }}</p>
+                                    <p><strong>Check-in:</strong> {{ booking.check_in_date.strftime('%B %d, %Y') }}</p>
+                                    <p><strong>Check-out:</strong> {{ booking.check_out_date.strftime('%B %d, %Y') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+                                    <p><strong>Guests:</strong> {{ booking.guests }}</p>
+                                    <p><strong>Total:</strong> ₱{{ booking.total_price }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form method="POST" action="{{ url_for('rating', booking_id=booking.id) }}">
+                            <div class="mb-4">
+                                <h4>Overall Experience</h4>
+                                <p class="text-muted">How would you rate your overall stay at our hotel?</p>
+                                <div class="rating-stars">
+                                    {% for i in range(5, 0, -1) %}
+                                        <input type="radio" name="overall_rating" value="{{ i }}" id="overall{{ i }}" required>
+                                        <label for="overall{{ i }}">★</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h4>Room Quality</h4>
+                                <p class="text-muted">How would you rate the comfort and quality of your room?</p>
+                                <div class="rating-stars">
+                                    {% for i in range(5, 0, -1) %}
+                                        <input type="radio" name="room_rating" value="{{ i }}" id="room{{ i }}" required>
+                                        <label for="room{{ i }}">★</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h4>Amenities</h4>
+                                <p class="text-muted">How would you rate the quality of our amenities?</p>
+                                    <div class="rating-stars">
+                                        {% for i in range(5, 0, -1) %}
+                                        <input type="radio" name="amenities_rating" value="{{ i }}" id="amenities{{ i }}" required>
+                                        <label for="amenities{{ i }}">★</label>
+                                        {% endfor %}
+                                    </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h4>Service Quality</h4>
+                                <p class="text-muted">How would you rate the service provided by our staff?</p>
+                                <div class="rating-stars">
+                                    {% for i in range(5, 0, -1) %}
+                                        <input type="radio" name="service_rating" value="{{ i }}" id="service{{ i }}" required>
+                                        <label for="service{{ i }}">★</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="comment" class="form-label">Additional Comments</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Share your experience with us..."></textarea>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Submit Rating</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating-stars input {
+    display: none;
+                    }
+
+.rating-stars label {
+    cursor: pointer;
+    font-size: 2rem;
+    color: #ddd;
+    padding: 0 0.1em;
+}
+
+.rating-stars input:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffd700;
+            }
+</style>
+{% endblock %}

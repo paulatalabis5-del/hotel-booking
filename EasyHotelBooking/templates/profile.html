@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="card mb-4" style="max-width: 500px; margin: 0 auto; max-height: 600px; overflow-y: auto;">
+    <div class="card-header bg-primary text-white text-center">
+        <h5 class="mb-0">My Profile</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('profile') }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">Name</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ current_user.phone_number or '' }}" pattern="[0-9]{11}" maxlength="11" inputmode="numeric" title="Phone number must be 11 digits" required>
+            </div>
+            <div class="mb-3">
+                <label for="current_password" class="form-label">Current Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="current_password" name="current_password" placeholder="Enter current password to change password">
+                    <span class="input-group-text" id="toggleCurrentPassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="new_password" class="form-label">New Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Leave blank to keep current password">
+                    <span class="input-group-text" id="toggleNewPassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" placeholder="Confirm new password">
+                    <span class="input-group-text" id="toggleConfirmNewPassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Update Profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleCurrentPassword = document.getElementById('toggleCurrentPassword');
+    const currentPassword = document.getElementById('current_password');
+    const toggleNewPassword = document.getElementById('toggleNewPassword');
+    const newPassword = document.getElementById('new_password');
+    const toggleConfirmNewPassword = document.getElementById('toggleConfirmNewPassword');
+    const confirmNewPassword = document.getElementById('confirm_new_password');
+    if (toggleCurrentPassword && currentPassword) {
+        toggleCurrentPassword.addEventListener('click', function () {
+            const type = currentPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            currentPassword.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+    if (toggleNewPassword && newPassword) {
+        toggleNewPassword.addEventListener('click', function () {
+            const type = newPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            newPassword.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+    if (toggleConfirmNewPassword && confirmNewPassword) {
+        toggleConfirmNewPassword.addEventListener('click', function () {
+            const type = confirmNewPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmNewPassword.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+});
+</script> 

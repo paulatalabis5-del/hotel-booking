@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Walk-In Booking Receipt{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Walk-In Booking Receipt</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Booking #{{ booking.id }}</h5>
+            <p><strong>Guest:</strong> {{ booking.user.username }}</p>
+            <p><strong>Room:</strong> {{ booking.room.name }} ({{ booking.room.room_type }})</p>
+            <p><strong>Check-in:</strong> {{ booking.check_in_date.strftime('%B %d, %Y') }}</p>
+            <p><strong>Check-out:</strong> {{ booking.check_out_date.strftime('%B %d, %Y') }}</p>
+            <p><strong>Total Price:</strong> ₱{{ booking.total_price }}</p>
+            <p><strong>Payment Method:</strong> Pay at Hotel</p>
+        </div>
+    </div>
+    <button class="btn btn-primary mt-3" onclick="window.print()">Print / Save as PDF</button>
+    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-secondary mt-3 ms-2">Back to Dashboard</a>
+</div>
+{% endblock %} 

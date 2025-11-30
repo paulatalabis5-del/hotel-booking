@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}New Walk-In Booking{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">New Walk-In Booking</h2>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="check_in" class="form-label">Check-in Date</label>
+                <input type="date" class="form-control" id="check_in" name="check_in" required min="{{ (now or current_date).strftime('%Y-%m-%d') }}" value="{{ request.form.check_in or request.args.get('check_in', '') }}">
+            </div>
+            <div class="col-md-6">
+                <label for="check_out" class="form-label">Check-out Date</label>
+                <input type="date" class="form-control" id="check_out" name="check_out" required min="{{ (now or current_date).strftime('%Y-%m-%d') }}" value="{{ request.form.check_out or request.args.get('check_out', '') }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="name" class="form-label">Guest Name</label>
+                <input type="text" class="form-control" id="name" name="name" required value="{{ request.form.name }}">
+            </div>
+            <div class="col-md-6">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="text" class="form-control" id="phone" name="phone" required maxlength="11" pattern="[0-9]{11}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)" value="{{ request.form.phone }}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required value="{{ request.form.email }}">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="id_proof" class="form-label">ID Proof (Upload Image)</label>
+            <input type="file" class="form-control" id="id_proof" name="id_proof" accept="image/*" required>
+        </div>
+        <div class="mb-3">
+            <label for="room_id" class="form-label">Select Room</label>
+            <select class="form-select" id="room_id" name="room_id" required>
+                <option value="" disabled selected>-- Select Room --</option>
+            </select>
+            <div id="no-rooms-message" class="text-danger mt-2" style="display:none;">No rooms available for selected dates.</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Payment Method</label>
+            <input type="text" class="form-control" value="Pay at Hotel" readonly>
+        </div>
+        <button type="submit" class="btn btn-success">Book Room</button>
+        <a href="{{ url_for('staff_dashboard') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkIn = document.getElementById('check_in');
+    const checkOut = document.getElementById('check_out');
+    const roomSelect = document.getElementById('room_id');
+    const noRoomsMsg = document.getElementById('no-rooms-message');
+
+    function updateRooms() {
+        const checkInVal = checkIn.value;
+        const checkOutVal = checkOut.value;
+        if (checkInVal && checkOutVal) {
+            fetch(`/api/available_rooms?check_in=${checkInVal}&check_out=${checkOutVal}`)
+                .then(res => res.json())
+                .then(data => {
+                    roomSelect.innerHTML = '';
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = '';
+                    defaultOpt.textContent = '-- Select Room --';
+                    defaultOpt.disabled = true;
+                    defaultOpt.selected = true;
+                    roomSelect.appendChild(defaultOpt);
+                    if (data.success && data.rooms.length > 0) {
+                        data.rooms.forEach(room => {
+                            const opt = document.createElement('option');
+                            opt.value = room.id;
+                            opt.textContent = `${room.name} - ₱${room.price_per_night}/night`;
+                            roomSelect.appendChild(opt);
+                        });
+                        roomSelect.disabled = false;
+                        noRoomsMsg.style.display = 'none';
+                    } else {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'No rooms available for selected dates';
+                        opt.disabled = true;
+                        roomSelect.appendChild(opt);
+                        roomSelect.disabled = true;
+                        noRoomsMsg.style.display = 'block';
+                    }
+                });
+        } else {
+            roomSelect.innerHTML = '<option value="" disabled selected>-- Select Room --</option>';
+            roomSelect.disabled = true;
+            noRoomsMsg.style.display = 'none';
+        }
+    }
+
+    checkIn.addEventListener('change', updateRooms);
+    checkOut.addEventListener('change', updateRooms);
+    // Disable room select initially
+    roomSelect.disabled = true;
+    noRoomsMsg.style.display = 'none';
+});
+</script>
+{% endblock %} 

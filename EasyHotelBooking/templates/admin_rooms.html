@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Room Editor - Easy Hotel{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Room Editor</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if rooms %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Price/Night</th>
+                            <th>Capacity</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                        <tr>
+                            <form method="POST">
+                                <input type="hidden" name="room_id" value="{{ room.id }}">
+                                <td><input type="text" class="form-control" name="name" value="{{ room.name }}" required></td>
+                                <td><input type="text" class="form-control" name="description" value="{{ room.description }}" required></td>
+                                <td><input type="number" class="form-control" name="price_per_night" value="{{ room.price_per_night }}" step="0.01" required></td>
+                                <td><input type="number" class="form-control" name="capacity" value="{{ room.capacity }}" min="1" required></td>
+                                <td>{% if room.image_url %}<img src="{{ room.image_url }}" alt="Room Image" style="width:60px;">{% else %}-{% endif %}</td>
+                                <td><button type="submit" class="btn btn-primary btn-sm">Save</button></td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No rooms found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

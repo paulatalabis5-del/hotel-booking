@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Room API</title>
+</head>
+<body>
+    <h1>Debug Room API Data</h1>
+    
+    <pre>{{ rooms|tojson(indent=4) }}</pre>
+    
+    <h2>Visual Debug of Each Room</h2>
+    
+    {% for room in rooms %}
+    <div style="border: 1px solid #ccc; margin-bottom: 20px; padding: 10px;">
+        <h3>{{ room.name }}</h3>
+        <p><strong>ID:</strong> {{ room.id }}</p>
+        <p><strong>Image URL:</strong> {{ room.image_url }}</p>
+        <p><strong>Description:</strong> {{ room.description }}</p>
+        <img src="{{ url_for('static', filename='images/rooms/' ~ room.image_url.split('/')[-1]) }}" alt="{{ room.name }}" style="max-width: 300px;">
+    </div>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Book a Room - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Book Your Stay</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Booking Information</h3>
+                    
+                    <form id="booking-form" method="POST" action="{{ url_for('booking') }}">
+                        {{ form.hidden_tag() if form }}
+                        
+                        <div class="mb-4">
+                            <label for="room-select" class="form-label">Select Room Type</label>
+                            <select class="form-select" id="room-select" name="room_id" required>
+                                <option value="">Loading rooms...</option>
+                            </select>
+                        </div>
+                        
+                        <div id="room-details"></div>
+                        
+                        <div class="row mb-4 mt-4">
+                            <div class="col-md-6">
+                                <label for="check-in-date" class="form-label">Check-in Date</label>
+                                <input type="date" class="form-control" id="check-in-date" name="check_in_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="check-out-date" class="form-label">Check-out Date</label>
+                                <input type="date" class="form-control" id="check-out-date" name="check_out_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="guests">Number of Guests</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="adults">Adults</label>
+                                    <input type="number" class="form-control" id="adults" name="adults" min="1" max="4" value="1" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="children">Children</label>
+                                    <input type="number" class="form-control" id="children" name="children" min="0" max="4" value="0" required>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Maximum 4 adults and 4 children per room</small>
+                        </div>
+                        
+                        <div id="availability-alert" class="alert alert-info">
+                            Please select a room and dates to check availability.
+                        </div>
+                        
+                        <div id="amenities-container">
+                            <!-- Amenities will be loaded here -->
+                        </div>
+                        
+                        <div id="price-display" class="my-4">
+                            <!-- Price will be displayed here -->
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" id="submit-booking" class="btn btn-primary btn-lg">Continue to Checkout</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Booking Tips</h3>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Check-in time starts at 2:00 PM
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Check-out time is until 12:00 PM
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Free cancellation up to 24 hours before check-in
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            All amenities can be added during booking or at the hotel
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Special requests may be subject to availability
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Need Help?</h3>
+                    <p>If you need assistance with your booking, please contact us:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone me-2 text-primary"></i> +63 123 456 7890</li>
+                        <li><i class="fas fa-envelope me-2 text-primary"></i> bookings@easyhotel.com</li>
+                    </ul>
+                    <p class="mt-3">Our booking support is available 24/7.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script>
+// Update the calculatePrice function to include adults and children
+function calculatePrice() {
+    const roomId = document.getElementById('room_id').value;
+    const checkIn = document.getElementById('check_in_date').value;
+    const checkOut = document.getElementById('check_out_date').value;
+    const adults = document.getElementById('adults').value;
+    const children = document.getElementById('children').value;
+    const amenities = getSelectedAmenities();
+
+    if (!roomId || !checkIn || !checkOut) {
+        return;
+    }
+
+    fetch(`/api/calculate_price?room_id=${roomId}&check_in=${checkIn}&check_out=${checkOut}&adults=${adults}&children=${children}&amenities=${JSON.stringify(amenities)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('room_cost').textContent = `₱${data.room_cost.toLocaleString()}`;
+                document.getElementById('amenities_cost').textContent = `₱${data.amenities_cost.toLocaleString()}`;
+                document.getElementById('total_cost').textContent = `₱${data.total_cost.toLocaleString()}`;
+                document.getElementById('nights').textContent = data.days;
+            } else {
+                alert(data.message);
+            }
+        });
+}
+
+// Add event listeners for adults and children inputs
+document.getElementById('adults').addEventListener('change', calculatePrice);
+document.getElementById('children').addEventListener('change', calculatePrice);
+</script>
+{% endblock %}

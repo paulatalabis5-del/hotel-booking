@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Create an Account</h2>
+                    
+                    <form method="POST" action="{{ url_for('register') }}">
+                        {{ form.hidden_tag() if form }}
+                        {% if require_code %}
+                            <div class="mb-3">
+                                <label for="verification_code" class="form-label">Verification Code</label>
+                                <input type="text" class="form-control" id="verification_code" name="verification_code" required>
+                                <input type="hidden" name="email" value="{{ email }}">
+                                <div id="timer" class="text-danger mt-2">Time remaining: 3:00</div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Verify & Register</button>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required pattern="[A-Za-z]{5,}" title="At least 5 letters, letters only">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="form-text">We'll never share your email with anyone else.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="phone_number" name="phone_number" required pattern="[0-9]{11}" maxlength="11" inputmode="numeric" title="Phone number must be 11 digits">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required pattern="^(?=.*[0-9])[A-Za-z0-9]{8,}$" title="At least 8 characters, must include a number">
+                                    <span class="input-group-text" id="togglePassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <div class="input-group">
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                    <span class="input-group-text" id="toggleConfirmPassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="terms" required>
+                                <label class="form-check-label" for="terms">I agree to the <a href="#">Terms and Conditions</a></label>
+                            </div>
+                            <div class="d-grid mb-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const username = document.getElementById('username');
+    const timer = document.getElementById('timer');
+    const phoneNumber = document.getElementById('phone_number');
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    
+    // Restrict phone number input to digits only
+    if (phoneNumber) {
+        phoneNumber.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+    // Timer functionality
+    if (timer) {
+        let timeLeft = 180; // 3 minutes in seconds
+        const timerDisplay = timer;
+        
+        const countdown = setInterval(function() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            timerDisplay.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerDisplay.textContent = 'Verification code expired. Please request a new one.';
+                document.querySelector('button[type="submit"]').disabled = true;
+            }
+            
+            timeLeft--;
+        }, 1000);
+    }
+
+    if (togglePassword && password) {
+        togglePassword.addEventListener('click', function () {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+    if (toggleConfirmPassword && confirmPassword) {
+        toggleConfirmPassword.addEventListener('click', function () {
+            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPassword.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+    
+    // Form validation
+    if (form && password && confirmPassword && username) {
+        form.addEventListener('submit', function(event) {
+            if (password.value !== confirmPassword.value) {
+                event.preventDefault();
+                alert('Passwords do not match');
+            }
+            if (!/^[A-Za-z]{5,}$/.test(username.value)) {
+                event.preventDefault();
+                alert('Username must be at least 5 letters and contain only letters.');
+            }
+            if (!/(?=.*\d).{8,}/.test(password.value)) {
+                event.preventDefault();
+                alert('Password must be at least 8 characters and include a number.');
+            }
+            const phoneNumber = document.getElementById('phone_number');
+            if (phoneNumber && !/^\d{11}$/.test(phoneNumber.value)) {
+                event.preventDefault();
+                alert('Phone number must be exactly 11 digits and contain only numbers.');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

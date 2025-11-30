@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Staff - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">Add New Staff</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_staff') }}">
+                {% if require_code %}
+                <div class="mb-3">
+                    <label for="verification_code" class="form-label">Verification Code</label>
+                    <input type="text" class="form-control" id="verification_code" name="verification_code" required>
+                    <input type="hidden" name="email" value="{{ email }}">
+                    <div id="timer" class="text-danger mt-2">Time remaining: 3:00</div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success w-100">Verify & Add Staff</button>
+                </div>
+                {% else %}
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="password" name="password">
+                        <span class="input-group-text" id="togglePassword" style="cursor:pointer;"><i class="fas fa-eye"></i></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="staff_role" class="form-label">Role</label>
+                    <select class="form-select" id="staff_role" name="staff_role" required>
+                        <option value="Front Desk">Front Desk</option>
+                        <option value="Bell Boy">Bell Boy</option>
+                        <option value="Housekeeping">Housekeeping</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="phone_number" class="form-label">Contact Info</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" required pattern="[0-9]{11}" maxlength="11" inputmode="numeric" title="Phone number must be 11 digits">
+                </div>
+                <div class="mb-3">
+                    <label for="staff_shift" class="form-label">Shift Timing (optional)</label>
+                    <input type="text" class="form-control" id="staff_shift" name="staff_shift">
+                </div>
+                <div class="mb-3">
+                    <label for="staff_status" class="form-label">Status</label>
+                    <select class="form-select" id="staff_status" name="staff_status">
+                        <option value="active" selected>Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Add Staff</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneNumber = document.getElementById('phone_number');
+    if (phoneNumber) {
+        phoneNumber.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+    const timer = document.getElementById('timer');
+    if (timer) {
+        let timeLeft = 180; // 3 minutes in seconds
+        const timerDisplay = timer;
+        const countdown = setInterval(function() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerDisplay.textContent = 'Verification code expired. Please request a new one.';
+                document.querySelector('button[type="submit"]').disabled = true;
+            }
+            timeLeft--;
+        }, 1000);
+    }
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    if (togglePassword && password) {
+        togglePassword.addEventListener('click', function () {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+});
+</script>
+{% endblock %} 

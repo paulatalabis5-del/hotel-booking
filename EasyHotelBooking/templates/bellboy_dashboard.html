@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Bell Boy Dashboard - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Bell Boy Dashboard</h2>
+    <!-- Add bell boy-specific content here -->
+    <p>Welcome, {{ current_user.username }}! This is your dashboard.</p>
+    <a href="{{ url_for('attendance') }}" class="btn btn-primary mb-3">Go to Attendance</a>
+</div>
+{% endblock %} 

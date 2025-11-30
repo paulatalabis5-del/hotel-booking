@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Booking Receipt - Easy Hotel{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white" style="border-radius: 1.5rem 1.5rem 0 0;">
+                    <h4 class="mb-0">Booking Receipt</h4>
+                </div>
+                <div class="card-body" id="receipt-content">
+                    <h5>Easy Hotel</h5>
+                    <p><strong>Booking Reference:</strong> {{ booking.id }}</p>
+                    <p><strong>Name:</strong> {{ current_user.username }}</p>
+                    <p><strong>Email:</strong> {{ current_user.email }}</p>
+                    <p><strong>Room:</strong> {{ room.name }}</p>
+                    <p><strong>Check-in:</strong> {{ booking.check_in_date }}</p>
+                    <p><strong>Check-out:</strong> {{ booking.check_out_date }}</p>
+                    <p><strong>Guests:</strong> {{ booking.guests }}</p>
+                    <p><strong>Total Paid:</strong> ₱{{ booking.total_price }}</p>
+                    <h5 class="mt-4">Amenities</h5>
+                    {% if amenities %}
+                    <ul>
+                        {% for amenity in amenities %}
+                        <li>{{ amenity.name }} x{{ amenity.quantity }} (₱{{ amenity.price }} each, ₱{{ amenity.total }} total)</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No amenities selected</p>
+                    {% endif %}
+                    <hr>
+                    <p>Thank you for booking with Easy Hotel!</p>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="printReceipt()"><i class="fas fa-print me-2"></i>Print Receipt</button>
+                    <button class="btn btn-outline-secondary" onclick="downloadReceiptPDF()"><i class="fas fa-file-pdf me-2"></i>Save as PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+function printReceipt() {
+    var printContents = document.getElementById('receipt-content').innerHTML;
+    var originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    location.reload();
+}
+function downloadReceiptPDF() {
+    var doc = new window.jspdf.jsPDF();
+    var receipt = document.getElementById('receipt-content').innerText;
+    doc.text(receipt, 10, 10);
+    doc.save('EasyHotel-Receipt.pdf');
+}
+</script>
+{% endblock %} 

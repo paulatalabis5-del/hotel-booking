@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Amenity Editor - Easy Hotel{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Amenity Editor</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if amenities %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for amenity in amenities %}
+                        <tr>
+                            <form method="POST">
+                                <input type="hidden" name="amenity_id" value="{{ amenity.id }}">
+                                <td><input type="text" class="form-control" name="name" value="{{ amenity.name }}" required></td>
+                                <td><input type="text" class="form-control" name="description" value="{{ amenity.description }}" required></td>
+                                <td><input type="number" class="form-control" name="price" value="{{ amenity.price }}" step="0.01" required></td>
+                                <td><button type="submit" class="btn btn-primary btn-sm">Save</button></td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No amenities found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

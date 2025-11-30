@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Management - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Staff Management</h2>
+        <a href="{{ url_for('add_staff') }}" class="btn btn-primary">Add New Staff</a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            {% if staff %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in staff %}
+                        <tr>
+                            <td>{{ s.username }}</td>
+                            <td>{{ s.username }}</td>
+                            <td>{{ s.email }}</td>
+                            <td>{{ s.staff_role }}</td>
+                            <td>{{ s.staff_status }}</td>
+                            <td>{{ s.staff_shift or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No staff members found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

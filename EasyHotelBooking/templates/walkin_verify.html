@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Walk-In Guest Email Verification{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Walk-In Guest Email Verification</h2>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Guest Email</label>
+            <input type="email" class="form-control" value="{{ guest_data.email }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="verification_code" class="form-label">Verification Code</label>
+            <input type="text" class="form-control" id="verification_code" name="verification_code" required maxlength="6" pattern="[0-9]{6}">
+        </div>
+        <button type="submit" class="btn btn-success">Verify &amp; Complete Booking</button>
+        <a href="{{ url_for('walkin_booking') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Complete Your Booking</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Booking Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <img src="{{ url_for('static', filename='images/rooms/' ~ room.image_url.split('/')[-1]) }}" class="img-fluid rounded" alt="{{ room.name }}">
+                        </div>
+                        <div class="col-md-8">
+                            <h4>{{ room.name }}</h4>
+                            <p>{{ room.description }}</p>
+                            <div class="d-flex justify-content-between">
+                                <p><i class="fas fa-calendar-alt me-2"></i> Check-in: <strong>{{ booking.check_in_date }}</strong></p>
+                                <p><i class="fas fa-calendar-alt me-2"></i> Check-out: <strong>{{ booking.check_out_date }}</strong></p>
+                            </div>
+                            <p><i class="fas fa-user-friends me-2"></i> Guests: <strong>{{ booking.adults }} Adult(s) and {{ booking.children }} Child(ren)</strong></p>
+                        </div>
+                    </div>
+                    
+                    <h5 class="border-bottom pb-2 mb-3">Amenities</h5>
+                    {% if amenities|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Amenity</th>
+                                    <th>Quantity</th>
+                                    <th class="text-end">Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for amenity in amenities %}
+                                <tr>
+                                    <td>{{ amenity.name }}</td>
+                                    <td>{{ amenity.quantity }}</td>
+                                    <td class="text-end">₱{{ amenity.price }}</td>
+                                    <td class="text-end">₱{{ amenity.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No amenities selected</p>
+                    {% endif %}
+                    
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">Price Details</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            {% set days = (booking.check_out_date.split('-')|last|int - booking.check_in_date.split('-')|last|int) %}
+                            <p>Room: {{ room.name }} ({{ days }} nights at ₱{{ room.price_per_night }}/night)</p>
+                            {% if amenities|length > 0 %}
+                                <p>Amenities</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <p>₱{{ room.price_per_night * days }}</p>
+                            {% if amenities|length > 0 %}
+                                <p>₱{{ booking.total_price - (room.price_per_night * days) }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5>Total</h5>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <h5>₱{{ booking.total_price }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Payment Method</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('checkout') }}">
+                        {{ form.hidden_tag() if form }}
+                        
+                        <div class="mb-4">
+                            <h5>Select Payment Method</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" checked>
+                                <label class="form-check-label" for="credit_card">
+                                    <i class="fab fa-cc-visa me-2"></i> Credit/Debit Card
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
+                                <label class="form-check-label" for="paypal">
+                                    <i class="fab fa-paypal me-2"></i> PayPal
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                <label class="form-check-label" for="bank_transfer">
+                                    <i class="fas fa-university me-2"></i> Bank Transfer
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="pay_at_hotel" value="pay_at_hotel">
+                                <label class="form-check-label" for="pay_at_hotel">
+                                    <i class="fas fa-money-bill-wave me-2"></i> Pay at Hotel
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="credit-card-details">
+                            <h5 class="mb-3">Card Details</h5>
+                            <div class="mb-3">
+                                <label for="card_name" class="form-label">Name on Card</label>
+                                <input type="text" class="form-control" id="card_name" name="card_name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="card_number" class="form-label">Card Number</label>
+                                <input type="text" class="form-control" id="card_number" name="card_number" placeholder="XXXX XXXX XXXX XXXX">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="card_expiry" class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" id="card_expiry" name="card_expiry" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="card_cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control" id="card_cvv" name="card_cvv" placeholder="XXX">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Complete Booking</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4 checkout-summary">
+                <div class="card-body">
+                    <h4 class="mb-3">Order Summary</h4>
+                    <div class="d-flex justify-content-between mb-2">
+                        <p class="mb-0">Room Charges</p>
+                        <p class="mb-0">₱{{ room.price_per_night * days }}</p>
+                    </div>
+                    {% if amenities|length > 0 %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <p class="mb-0">Amenities</p>
+                        <p class="mb-0">₱{{ booking.total_price - (room.price_per_night * days) }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <p class="mb-0">Taxes (Included)</p>
+                        <p class="mb-0">₱0.00</p>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 class="mb-0">Total</h5>
+                        <h5 class="mb-0">₱{{ booking.total_price }}</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="mb-3">Cancellation Policy</h4>
+                    <p><i class="fas fa-info-circle text-primary me-2"></i> Free cancellation until 24 hours before check-in.</p>
+                    <p><i class="fas fa-info-circle text-primary me-2"></i> Cancellation after that or no-show will incur a charge of one night's stay.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Booking and Payment</h6>
+                <p>All reservations at Easy Hotel are subject to availability and confirmation. A valid credit card is required to secure your booking. Payment may be made at the time of booking or at check-in, depending on the rate selected.</p>
+                
+                <h6>2. Check-in and Check-out</h6>
+                <p>Check-in time is 2:00 PM and check-out time is 12:00 PM. Early check-in or late check-out may be available upon request and may incur additional charges.</p>
+                
+                <h6>3. Cancellation Policy</h6>
+                <p>Free cancellation is available until 24 hours before check-in. Cancellations made after this time or no-shows will incur a charge equivalent to one night's stay.</p>
+                
+                <h6>4. Guest Responsibilities</h6>
+                <p>Guests are responsible for their behavior and for any damage caused to hotel property during their stay. The hotel reserves the right to charge guests for any damages.</p>
+                
+                <h6>5. Privacy Policy</h6>
+                <p>Easy Hotel respects your privacy and will protect your personal information in accordance with applicable laws and regulations.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Section (shown after payment) -->
+<div id="receipt-section" class="card shadow-sm mb-4 mt-4" style="display:none;">
+    <div class="card-header bg-success text-white" style="border-radius: 1.5rem 1.5rem 0 0;">
+        <h4 class="mb-0">Booking Receipt</h4>
+    </div>
+    <div class="card-body" id="receipt-content">
+        <h5>Easy Hotel</h5>
+        <p><strong>Booking Reference:</strong> <span id="receipt-booking-id">(Auto-generated)</span></p>
+        <p><strong>Name:</strong> {{ current_user.username }}</p>
+        <p><strong>Email:</strong> {{ current_user.email }}</p>
+        <p><strong>Room:</strong> {{ room.name }}</p>
+        <p><strong>Check-in:</strong> {{ booking.check_in_date }}</p>
+        <p><strong>Check-out:</strong> {{ booking.check_out_date }}</p>
+        <p><strong>Guests:</strong> {{ booking.adults }} Adult(s), {{ booking.children }} Child(ren)</p>
+        <p><strong>Total Paid:</strong> ₱{{ booking.total_price }}</p>
+        <hr>
+        <p>Thank you for booking with Easy Hotel!</p>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="printReceipt()"><i class="fas fa-print me-2"></i>Print Receipt</button>
+        <button class="btn btn-outline-secondary" onclick="downloadReceiptPDF()"><i class="fas fa-file-pdf me-2"></i>Save as PDF</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+function printReceipt() {
+    var printContents = document.getElementById('receipt-content').innerHTML;
+    var originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    location.reload();
+}
+function downloadReceiptPDF() {
+    var doc = new window.jspdf.jsPDF();
+    var receipt = document.getElementById('receipt-content').innerText;
+    doc.text(receipt, 10, 10);
+    doc.save('EasyHotel-Receipt.pdf');
+}
+// Show receipt after successful payment (simulate for now)
+document.addEventListener('DOMContentLoaded', function() {
+    // You can show the receipt after payment is completed
+    // document.getElementById('receipt-section').style.display = 'block';
+});
+</script>
+{% endblock %}

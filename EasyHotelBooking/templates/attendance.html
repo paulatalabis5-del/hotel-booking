@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance - Easy Hotel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Attendance Management</h2>
+    {% if message %}
+    <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    <form method="POST" class="mb-4" enctype="multipart/form-data">
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <input type="text" class="form-control" name="verify_id" placeholder="Enter your ID (username)" required>
+            </div>
+            <div class="col-auto">
+                <input type="file" class="form-control" name="id_image" accept="image/*" required>
+            </div>
+            <div class="col-auto">
+                <button name="action" value="clock_in" class="btn btn-success">Clock In</button>
+            </div>
+            <div class="col-auto">
+                <button name="action" value="clock_out" class="btn btn-warning">Clock Out</button>
+            </div>
+        </div>
+    </form>
+    <h4>Today's Attendance</h4>
+    <ul>
+        <li>Clock In: {{ attendance_record.clock_in if attendance_record else 'Not yet' }}</li>
+        <li>Clock Out: {{ attendance_record.clock_out if attendance_record else 'Not yet' }}</li>
+    </ul>
+    <h4>Attendance Logs</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Date</th><th>Clock In</th><th>Clock Out</th><th>ID Image</th><th>Approved</th></tr></thead>
+        <tbody>
+        {% for log in attendance_logs %}
+        <tr>
+            <td>{{ log.date }}</td>
+            <td>{{ log.clock_in or '-' }}</td>
+            <td>{{ log.clock_out or '-' }}</td>
+            <td>{% if log.id_image %}<a href="{{ log.id_image }}" target="_blank">View</a>{% else %}-{% endif %}</td>
+            <td>{% if log.approved %}<span class="text-success">Approved</span>{% else %}<span class="text-warning">Pending</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h4>Request Leave</h4>
+    <form method="POST" class="mb-4">
+        <input type="hidden" name="action" value="request_leave">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <input type="date" class="form-control" name="start_date" required>
+            </div>
+            <div class="col-md-3">
+                <input type="date" class="form-control" name="end_date" required>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="reason" placeholder="Reason" required>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Request Leave</button>
+            </div>
+        </div>
+    </form>
+    <h4>Leave Requests</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Start</th><th>End</th><th>Reason</th><th>Status</th><th>Admin Comment</th></tr></thead>
+        <tbody>
+        {% for leave in leave_requests %}
+        <tr>
+            <td>{{ leave.start_date }}</td>
+            <td>{{ leave.end_date }}</td>
+            <td>{{ leave.reason }}</td>
+            <td>{{ leave.status }}</td>
+            <td>{{ leave.admin_comment or '-' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

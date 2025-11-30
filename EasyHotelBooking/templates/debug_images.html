@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Images</title>
+</head>
+<body>
+    <h1>Debug Images</h1>
+    <p>Testing direct image access:</p>
+    
+    <div>
+        <h2>Standard Queen Image</h2>
+        <img src="{{ url_for('static', filename='images/rooms/standard-queen.jpg') }}" alt="Standard Queen" width="300">
+    </div>
+    
+    <div>
+        <h2>Standard Twin Image</h2>
+        <img src="{{ url_for('static', filename='images/rooms/standard-twin.jpg') }}" alt="Standard Twin" width="300">
+    </div>
+    
+    <div>
+        <h2>Superior Triple Image</h2>
+        <img src="{{ url_for('static', filename='images/rooms/superior-triple.jpg') }}" alt="Superior Triple" width="300">
+    </div>
+    
+    <div>
+        <h2>Superior Twin Image</h2>
+        <img src="{{ url_for('static', filename='images/rooms/superior-twin.jpg') }}" alt="Superior Twin" width="300">
+    </div>
+</body>
+</html>

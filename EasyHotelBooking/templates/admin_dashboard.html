@@ -1,0 +1,941 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Easy Hotel{% endblock %}
+
+{% block styles %}
+<style>
+.dashboard-summary {
+    min-height: 180px;
+    border-radius: 2rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.dashboard-summary .card-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.dashboard-summary .card-footer {
+    border-bottom-left-radius: 2rem !important;
+    border-bottom-right-radius: 2rem !important;
+}
+.section-card {
+    border-radius: 2rem !important;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.section-card .card-header {
+    border-top-left-radius: 2rem !important;
+    border-top-right-radius: 2rem !important;
+}
+.section-card .card-body, .section-card .alert {
+    border-radius: 1.5rem !important;
+}
+.rating-stars {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 admin-dashboard">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    <div class="mb-4 d-flex gap-2">
+        {# Removed Attendance Management button #}
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 d-flex align-items-stretch">
+            <div class="card bg-primary text-white mb-4 w-100 h-100 dashboard-summary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Pending Bookings</h5>
+                            <h2 class="mt-2 mb-0">{{ pending_bookings|length }}</h2>
+                        </div>
+                        <i class="fas fa-clock fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-white stretched-link text-decoration-none" href="#pending-section">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex align-items-stretch">
+            <div class="card bg-success text-white mb-4 w-100 h-100 dashboard-summary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Confirmed Bookings</h5>
+                            <h2 class="mt-2 mb-0">{{ confirmed_bookings|length }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-white stretched-link text-decoration-none" href="#confirmed-section">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex align-items-stretch">
+            <div class="card bg-danger text-white mb-4 w-100 h-100 dashboard-summary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Cancelled Bookings</h5>
+                            <h2 class="mt-2 mb-0">{{ cancelled_bookings|length }}</h2>
+                        </div>
+                        <i class="fas fa-times-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-white stretched-link text-decoration-none" href="#cancelled-section">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex align-items-stretch">
+            <div class="card bg-info text-white mb-4 w-100 h-100 dashboard-summary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">Recent Ratings</h5>
+                            <h2 class="mt-2 mb-0">{{ recent_ratings|length }}</h2>
+                        </div>
+                        <i class="fas fa-star fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="text-white stretched-link text-decoration-none" href="#ratings-section">View Details</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white w-100" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#revenueModal">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h3 class="card-text">&#8369;{{ "%.2f"|format(total_revenue) }}</h3>
+                    <p class="card-text"><small>Click to view detailed reports</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Report Modal -->
+    <div class="modal fade" id="revenueModal" tabindex="-1" aria-labelledby="revenueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="revenue-report-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="revenueModalLabel">Revenue Reports</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="revenueTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" type="button" role="tab">Weekly</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" type="button" role="tab">Monthly</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="yearly-tab" data-bs-toggle="tab" data-bs-target="#yearly" type="button" role="tab">Yearly</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="revenueTabContent">
+                        <div class="tab-pane fade show active" id="weekly" role="tabpanel">
+                            <canvas id="weeklyRevenueChart"></canvas>
+                        </div>
+                        <div class="tab-pane fade" id="monthly" role="tabpanel">
+                            <canvas id="monthlyRevenueChart"></canvas>
+                        </div>
+                        <div class="tab-pane fade" id="yearly" role="tabpanel">
+                            <canvas id="yearlyRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="printRevenueReport()">Print</button>
+                    <button type="button" class="btn btn-success" onclick="saveRevenueReportAsPDF()">Save as PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Booking Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statistics-chart" height="250" data-pending-count="{{ pending_bookings|length }}"
+                        data-confirmed-count="{{ confirmed_bookings|length }}"
+                        data-cancelled-count="{{ cancelled_bookings|length }}"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Rating Distribution</h5>
+                </div>
+                <div class="card-body">
+                    {% set star1 = recent_ratings|selectattr('overall_rating', 'equalto', 1)|list|length %}
+                    {% set star2 = recent_ratings|selectattr('overall_rating', 'equalto', 2)|list|length %}
+                    {% set star3 = recent_ratings|selectattr('overall_rating', 'equalto', 3)|list|length %}
+                    {% set star4 = recent_ratings|selectattr('overall_rating', 'equalto', 4)|list|length %}
+                    {% set star5 = recent_ratings|selectattr('overall_rating', 'equalto', 5)|list|length %}
+
+                    <canvas id="ratings-chart" height="250" data-star1="{{ star1 }}" data-star2="{{ star2 }}"
+                        data-star3="{{ star3 }}" data-star4="{{ star4 }}" data-star5="{{ star5 }}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card section-card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="pending-section">Pending Bookings</h5>
+                    <span class="badge bg-light text-dark">{{ pending_bookings|length }} bookings</span>
+                </div>
+                <div class="card-body">
+                    {% if pending_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Room</th>
+                                    <th class="booking-date">Date Booked</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Guests</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in pending_bookings %}
+                                <tr>
+                                    <td>{{ booking.id }}</td>
+                                    <td>{{ booking.user.username }}</td>
+                                    <td>{{ booking.room.name }}</td>
+                                    <td class="booking-date" data-date="{{ booking.created_at }}">{{
+                                        booking.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.check_in_date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.check_out_date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.guests }}</td>
+                                    <td>₱{{ booking.total_price }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info booking-details-btn"
+                                            data-booking-id="{{ booking.id }}">Show Details</button>
+                                    </td>
+                                </tr>
+                                <tr id="booking-details-{{ booking.id }}" class="details-row" style="display: none;">
+                                    <td colspan="9">
+                                        <div class="p-3 bg-light" style="border-radius: 2rem;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="col-md-6">
+                                                        <h6 style="color: #2c3e50; font-weight: bold;">Booking Details
+                                                        </h6>
+                                                        <p>
+                                                            <strong style="color: #34495e;">User Email:</strong>
+                                                            <span style="color: #2c3e50;">{{ booking.user.email
+                                                                }}</span>
+                                                        </p>
+                                                        <p>
+                                                            <strong style="color: #34495e;">Room:</strong>
+                                                            <span style="color: #2c3e50;">{{ booking.room.name }}</span>
+                                                            <span style="color: #27ae60;">(₱{{
+                                                                booking.room.price_per_night }}/night)</span>
+                                                        </p>
+                                                        <p>
+                                                            <strong style="color: #34495e;">Stay Duration:</strong>
+                                                            <span style="color: #2c3e50;">{{ (booking.check_out_date -
+                                                                booking.check_in_date).days }} nights</span>
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <h6 style="color: #2c3e50; font-weight: bold;">Amenities</h6>
+                                                        {% if booking.booking_amenities.count() > 0 %}
+                                                        <ul style="color: #2c3e50;">
+                                                            {% for booking_amenity in booking.booking_amenities %}
+                                                            <li>
+                                                                {{ booking_amenity.amenity.name }}
+                                                                <span style="color: #7f8c8d;">({{
+                                                                    booking_amenity.quantity }})</span>
+                                                                – <span style="color: #27ae60;">₱{{
+                                                                    booking_amenity.amenity.price *
+                                                                    booking_amenity.quantity }}</span>
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                        {% else %}
+                                                        <p style="color: #7f8c8d;">No amenities selected</p>
+                                                        {% endif %}
+                                                    </div>
+
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-md-6">
+                                                        <form id="confirm-form-{{ booking.id }}"
+                                                            action="{{ url_for('verify_booking', booking_id=booking.id) }}"
+                                                            method="POST">
+                                                            <input type="hidden" name="action" value="confirm">
+                                                            <button type="button"
+                                                                class="btn btn-success confirm-booking-btn"
+                                                                data-booking-id="{{ booking.id }}">
+                                                                <i class="fas fa-check me-2"></i> Confirm Booking
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <form id="cancel-form-{{ booking.id }}"
+                                                            action="{{ url_for('verify_booking', booking_id=booking.id) }}"
+                                                            method="POST">
+                                                            <input type="hidden" name="action" value="cancel">
+                                                            <div class="input-group">
+                                                                <input type="text" class="form-control" name="reason"
+                                                                    id="cancel-reason-{{ booking.id }}"
+                                                                    placeholder="Reason for cancellation" required>
+                                                                <button type="button"
+                                                                    class="btn btn-danger cancel-booking-btn"
+                                                                    data-booking-id="{{ booking.id }}">
+                                                                    <i class="fas fa-times me-2"></i> Cancel
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">There are no pending bookings at this time.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card section-card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="confirmed-section">Confirmed Bookings</h5>
+                    <span class="badge bg-light text-dark">{{ confirmed_bookings|length }} bookings</span>
+                </div>
+                <div class="card-body">
+                    {% if confirmed_bookings %}
+                    <div class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="search-input"
+                                    placeholder="Search bookings...">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" class="form-control" id="start-date-filter" placeholder="Start Date">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" class="form-control" id="end-date-filter" placeholder="End Date">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" id="apply-filter">Apply Filter</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="confirmed-bookings">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Room</th>
+                                    <th>Date Booked</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Guests</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in confirmed_bookings %}
+                                <tr>
+                                    <td>{{ booking.id }}</td>
+                                    <td>{{ booking.user.username }}</td>
+                                    <td>{{ booking.room.name }}</td>
+                                    <td class="booking-date" data-date="{{ booking.created_at }}">{{
+                                        booking.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.check_in_date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.check_out_date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ booking.guests }}</td>
+                                    <td>₱{{ booking.total_price }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info booking-details-btn"
+                                            data-booking-id="{{ booking.id }}">Show Details</button>
+                                    </td>
+                                </tr>
+                                <tr id="booking-details-{{ booking.id }}" class="details-row" style="display: none;">
+                                    <td colspan="9">
+                                        <div class="p-3 bg-light" style="border-radius: 2rem;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="col-md-6">
+                                                        <h6 style="color: #2c3e50; font-weight: bold;">Booking Details
+                                                        </h6>
+                                                        <p>
+                                                            <strong style="color: #34495e;">User Email:</strong>
+                                                            <span style="color: #2c3e50;">{{ booking.user.email
+                                                                }}</span>
+                                                        </p>
+                                                        <p>
+                                                            <strong style="color: #34495e;">Room:</strong>
+                                                            <span style="color: #2c3e50;">{{ booking.room.name }}</span>
+                                                            <span style="color: #27ae60;">(₱{{
+                                                                booking.room.price_per_night }}/night)</span>
+                                                        </p>
+                                                        <p>
+                                                            <strong style="color: #34495e;">Stay Duration:</strong>
+                                                            <span style="color: #2c3e50;">{{ (booking.check_out_date -
+                                                                booking.check_in_date).days }} nights</span>
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <h6 style="color: #2c3e50; font-weight: bold;">Amenities</h6>
+                                                        {% if booking.booking_amenities.count() > 0 %}
+                                                        <ul style="color: #2c3e50;">
+                                                            {% for booking_amenity in booking.booking_amenities %}
+                                                            <li>
+                                                                {{ booking_amenity.amenity.name }}
+                                                                <span style="color: #7f8c8d;">({{
+                                                                    booking_amenity.quantity }})</span> -
+                                                                <span style="color: #27ae60;">₱{{
+                                                                    booking_amenity.amenity.price *
+                                                                    booking_amenity.quantity }}</span>
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                        {% else %}
+                                                        <p style="color: #7f8c8d;">No amenities selected</p>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    {% if booking.rating %}
+                                                    <div class="mt-3 p-3 border-top">
+                                                        <h6>Guest Rating</h6>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="rating-stars me-2">
+                                                                {% for i in range(1, 6) %}
+                                                                {% if i <= booking.rating.overall_rating %} <i
+                                                                    class="fas fa-star"></i>
+                                                                    {% else %}
+                                                                    <i class="far fa-star"></i>
+                                                                    {% endif %}
+                                                                    {% endfor %}
+                                                            </div>
+                                                            <span>{{ booking.rating.overall_rating }}/5</span>
+                                                        </div>
+                                                        {% if booking.rating.comment %}
+                                                        <p class="mt-2"><strong>Comment:</strong> {{
+                                                            booking.rating.comment }}
+                                                        </p>
+                                                        {% endif %}
+
+                                                        {% if booking.rating.admin_reply %}
+                                                        <div class="alert alert-info mt-2">
+                                                            <p class="mb-0"><strong>Your Reply:</strong> {{
+                                                                booking.rating.admin_reply }}</p>
+                                                        </div>
+                                                        {% else %}
+                                                        <form id="reply-form-{{ booking.rating.id }}"
+                                                            action="{{ url_for('reply_to_rating', rating_id=booking.rating.id) }}"
+                                                            method="POST">
+                                                            <div class="input-group mt-2">
+                                                                <input type="text" class="form-control" name="reply"
+                                                                    id="reply-text-{{ booking.rating.id }}"
+                                                                    placeholder="Reply to this rating..." required>
+                                                                <button type="button"
+                                                                    class="btn btn-primary reply-rating-btn"
+                                                                    data-rating-id="{{ booking.rating.id }}">
+                                                                    <i class="fas fa-reply me-1"></i> Send Reply
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">There are no confirmed bookings at this time.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card section-card">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="cancelled-section">Cancelled Bookings</h5>
+                    <span class="badge bg-light text-dark">{{ cancelled_bookings|length }} bookings</span>
+                </div>
+                <div class="card-body">
+                    {% if cancelled_bookings %}
+                    <ul class="nav nav-tabs" id="cancelledTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="user-cancelled-tab" data-bs-toggle="tab" data-bs-target="#user-cancelled" type="button" role="tab">
+                                User Cancellations
+                                <span class="badge bg-danger ms-2">{{ cancelled_bookings|selectattr('cancelled_by', 'equalto', 'user')|list|length }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="admin-cancelled-tab" data-bs-toggle="tab" data-bs-target="#admin-cancelled" type="button" role="tab">
+                                Admin Cancellations
+                                <span class="badge bg-danger ms-2">{{ cancelled_bookings|selectattr('cancelled_by', 'equalto', 'admin')|list|length }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="cancelledTabsContent">
+                        <!-- User Cancellations -->
+                        <div class="tab-pane fade show active" id="user-cancelled" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Room</th>
+                                            <th>Date Booked</th>
+                                            <th>Cancellation Reason</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in cancelled_bookings if booking.cancelled_by == 'user' %}
+                                        <tr>
+                                            <td>{{ booking.id }}</td>
+                                            <td>{{ booking.user.username }}</td>
+                                            <td>{{ booking.room.name }}</td>
+                                            <td class="booking-date" data-date="{{ booking.created_at }}">{{ booking.created_at.strftime('%b %d, %Y') }}</td>
+                                            <td>{{ booking.cancellation_reason }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info booking-details-btn" data-booking-id="{{ booking.id }}">Show Details</button>
+                                            </td>
+                                        </tr>
+                                        <tr id="booking-details-{{ booking.id }}" class="details-row" style="display: none;">
+                                            <td colspan="6">
+                                                <div class="p-3 bg-light" style="border-radius: 2rem;">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6 style="color: #2c3e50; font-weight: bold;">Booking Details</h6>
+                                                            <p><strong style="color: #34495e;">User Email:</strong> <span style="color: #2c3e50;">{{ booking.user.email }}</span></p>
+                                                            <p><strong style="color: #34495e;">Room:</strong> <span style="color: #2c3e50;">{{ booking.room.name }}</span></p>
+                                                            <p><strong style="color: #34495e;">Check-in:</strong> <span style="color: #2c3e50;">{{ booking.check_in_date.strftime('%b %d, %Y') }}</span></p>
+                                                            <p><strong style="color: #34495e;">Check-out:</strong> <span style="color: #2c3e50;">{{ booking.check_out_date.strftime('%b %d, %Y') }}</span></p>
+                                                            <p><strong style="color: #34495e;">Guests:</strong> <span style="color: #2c3e50;">{{ booking.guests }}</span></p>
+                                                            <p><strong style="color: #34495e;">Total Price:</strong> <span style="color: #27ae60;">₱{{ booking.total_price }}</span></p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6 style="color: #2c3e50; font-weight: bold;">Cancellation Information</h6>
+                                                            <p><strong style="color: #e74c3c;">Reason:</strong> <span style="color: #2c3e50;">{{ booking.cancellation_reason }}</span></p>
+                                                            <p><strong style="color: #e74c3c;">Cancelled On:</strong> <span style="color: #2c3e50;">{{ booking.updated_at.strftime('%b %d, %Y at %H:%M') if booking.updated_at else 'N/A' }}</span></p>
+                                                            <p><strong style="color: #e74c3c;">Cancelled By:</strong> <span style="color: #2c3e50;">User</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Admin Cancellations -->
+                        <div class="tab-pane fade" id="admin-cancelled" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Room</th>
+                                            <th>Date Booked</th>
+                                            <th>Cancellation Reason</th>
+                                            <th>Cancelled By</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in cancelled_bookings if booking.cancelled_by == 'admin' %}
+                                        <tr>
+                                            <td>{{ booking.id }}</td>
+                                            <td>{{ booking.user.username }}</td>
+                                            <td>{{ booking.room.name }}</td>
+                                            <td class="booking-date" data-date="{{ booking.created_at }}">{{ booking.created_at.strftime('%b %d, %Y') }}</td>
+                                            <td>{{ booking.cancellation_reason }}</td>
+                                            <td>Admin</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info booking-details-btn" data-booking-id="{{ booking.id }}">Show Details</button>
+                                            </td>
+                                        </tr>
+                                        <tr id="booking-details-{{ booking.id }}" class="details-row" style="display: none;">
+                                            <td colspan="7">
+                                                <div class="p-3 bg-light" style="border-radius: 2rem;">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6 style="color: #2c3e50; font-weight: bold;">Booking Details</h6>
+                                                            <p><strong style="color: #34495e;">User Email:</strong> <span style="color: #2c3e50;">{{ booking.user.email }}</span></p>
+                                                            <p><strong style="color: #34495e;">Room:</strong> <span style="color: #2c3e50;">{{ booking.room.name }}</span></p>
+                                                            <p><strong style="color: #34495e;">Check-in:</strong> <span style="color: #2c3e50;">{{ booking.check_in_date.strftime('%b %d, %Y') }}</span></p>
+                                                            <p><strong style="color: #34495e;">Check-out:</strong> <span style="color: #2c3e50;">{{ booking.check_out_date.strftime('%b %d, %Y') }}</span></p>
+                                                            <p><strong style="color: #34495e;">Guests:</strong> <span style="color: #2c3e50;">{{ booking.guests }}</span></p>
+                                                            <p><strong style="color: #34495e;">Total Price:</strong> <span style="color: #27ae60;">₱{{ booking.total_price }}</span></p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6 style="color: #2c3e50; font-weight: bold;">Cancellation Information</h6>
+                                                            <p><strong style="color: #e74c3c;">Reason:</strong> <span style="color: #2c3e50;">{{ booking.cancellation_reason }}</span></p>
+                                                            <p><strong style="color: #e74c3c;">Cancelled On:</strong> <span style="color: #2c3e50;">{{ booking.updated_at.strftime('%b %d, %Y at %H:%M') if booking.updated_at else 'N/A' }}</span></p>
+                                                            <p><strong style="color: #e74c3c;">Cancelled By:</strong> <span style="color: #2c3e50;">Admin</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">There are no cancelled bookings at this time.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card section-card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="ratings-section">Recent Ratings</h5>
+                    <span class="badge bg-light text-dark">{{ recent_ratings|length }} ratings</span>
+                </div>
+                <div class="card-body">
+                    {% if recent_ratings %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>User</th>
+                                    <th>Overall</th>
+                                    <th>Room</th>
+                                    <th>Amenities</th>
+                                    <th>Service</th>
+                                    <th>Comment</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rating in recent_ratings %}
+                                    <tr>
+                                        <td>#{{ rating.booking_id }}</td>
+                                        <td>{{ rating.user.username }}</td>
+                                        <td>
+                                            <div class="rating-stars">
+                                                {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {% if i <= rating.overall_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="rating-stars">
+                                                {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {% if i <= rating.room_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="rating-stars">
+                                                {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {% if i <= rating.amenities_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="rating-stars">
+                                                {% for i in range(1, 6) %}
+                                                    <i class="fas fa-star {% if i <= rating.service_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>{{ rating.comment or 'No comment' }}</td>
+                                        <td>{{ rating.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            {% if not rating.admin_reply %}
+                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#replyModal{{ rating.id }}">
+                                                    Reply
+                                                </button>
+                                            {% else %}
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#replyModal{{ rating.id }}">
+                                                    View Reply
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+
+                                    <!-- Reply Modal -->
+                                    <div class="modal fade" id="replyModal{{ rating.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Reply to Rating</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ url_for('reply_to_rating', rating_id=rating.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">User's Rating</label>
+                                                            <div class="rating-summary">
+                                                                <div>Overall: {{ rating.overall_rating }}/5</div>
+                                                                <div>Room: {{ rating.room_rating }}/5</div>
+                                                                <div>Amenities: {{ rating.amenities_rating }}/5</div>
+                                                                <div>Service: {{ rating.service_rating }}/5</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">User's Comment</label>
+                                                            <p class="form-text">{{ rating.comment or 'No comment' }}</p>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="reply{{ rating.id }}" class="form-label">Your Reply</label>
+                                                            <textarea class="form-control" id="reply{{ rating.id }}" name="reply" rows="3" required>{{ rating.admin_reply or '' }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit Reply</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">There are no ratings at this time.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<!-- Add jsPDF and html2canvas for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// Revenue charts
+let weeklyChart = null;
+let monthlyChart = null;
+let yearlyChart = null;
+
+function loadRevenueData() {
+    // Load weekly data
+    fetch('/api/revenue/weekly')
+        .then(response => response.json())
+        .then(data => {
+            if (weeklyChart) {
+                weeklyChart.destroy();
+            }
+            weeklyChart = new Chart(document.getElementById('weeklyRevenueChart'), {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Weekly Revenue',
+                        data: data.data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Load monthly data
+    fetch('/api/revenue/monthly')
+        .then(response => response.json())
+        .then(data => {
+            if (monthlyChart) {
+                monthlyChart.destroy();
+            }
+            monthlyChart = new Chart(document.getElementById('monthlyRevenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: data.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Load yearly data
+    fetch('/api/revenue/yearly')
+        .then(response => response.json())
+        .then(data => {
+            if (yearlyChart) {
+                yearlyChart.destroy();
+            }
+            yearlyChart = new Chart(document.getElementById('yearlyRevenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Yearly Revenue',
+                        data: data.data,
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderColor: 'rgb(153, 102, 255)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+}
+
+// Load revenue data when the modal is opened
+document.getElementById('revenueModal').addEventListener('show.bs.modal', function () {
+    loadRevenueData();
+});
+
+function printRevenueReport() {
+    const printContents = document.getElementById('revenue-report-content').innerHTML;
+    const originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // To restore event listeners and modal state
+}
+
+function saveRevenueReportAsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4'
+    });
+    const reportContent = document.getElementById('revenue-report-content');
+    doc.html(reportContent, {
+        callback: function (doc) {
+            doc.save('Revenue_Report.pdf');
+        },
+        x: 10,
+        y: 10,
+        html2canvas: {
+            scale: 0.7,
+            useCORS: true
+        }
+    });
+}
+</script>
+<style>
+@media print {
+    body * { visibility: hidden !important; }
+    #revenue-report-content, #revenue-report-content * { visibility: visible !important; }
+    #revenue-report-content { position: absolute; left: 0; top: 0; width: 100vw; background: #fff; color: #000; font-family: 'Arial', 'Segoe UI', 'Noto Sans', sans-serif !important; }
+    .modal-footer .btn { display: none !important; }
+}
+</style>
+{% endblock %}
