@@ -418,20 +418,23 @@ def get_rooms():
         
         room_dict = {
             'id': room.id,
-            'room_number': room.room_number,
+            'room_number': room.room_number or '',
             'room_type_id': room.room_size_id,
             'room_type_name': room_size.room_type_name if room_size else 'Unknown',
             'floor_plan_id': room.floor_id,
             'floor_name': floor_plan.floor_name if floor_plan else 'Unknown',
-            'price_per_night': room.price_per_night,
+            'price_per_night': float(room.price_per_night) if room.price_per_night else 0.0,
             'max_adults': room_size.max_adults if room_size else 0,
             'max_children': room_size.max_children if room_size else 0,
-            'status': room.status,
-            'image_url': room.image_url or ''
+            'status': room.status or 'available',
+            'image_url': room.image_url or '',
+            'name': room.name or f'Room {room.room_number}',
+            'description': room.description or 'Comfortable room',
+            'capacity': room.capacity or 2
         }
         rooms_data.append(room_dict)
     
-    return jsonify(rooms_data)
+    return jsonify({'data': rooms_data})
 
 @api_bp.route('/admin/rooms', methods=['POST'])
 @token_required
